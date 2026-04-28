@@ -1,0 +1,17 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: patcat-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: patcat
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_0900_ai_ci"
+    volumes:
+      - "./mysql-data:/var/lib/mysql"
+      - "./mysql-init.sql:/docker-entrypoint-initdb.d/001_mysql-init.sql:ro"

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>在线撸猫地图</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="map"></div>
+    <div id="hud">
+      <div class="title">在线撸猫地图</div>
+      <div class="sub">数据来源：维基百科「家猫品种列表」</div>
+      <div class="hint">拖拽平移，滚轮缩放；点击猫咪头像查看详情</div>
+      <div id="status" class="status">正在加载数据…</div>
+    </div>
+    <div class="sync-wrap">
+      <button id="syncBtn" class="sync-btn" type="button">同步</button>
+    </div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+  <script src="./app.js"></script>
+</body>
+<style>
+</style>
+</html>
