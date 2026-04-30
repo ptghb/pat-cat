@@ -1,12 +1,47 @@
 const MAP = L.map("map", { worldCopyJump: false, minZoom: 2, zoomSnap: 0.25, zoomDelta: 0.5, inertia: true }).setView([20, 0], 2.5);
-function addBaseLayerWithFallback() {
-  const gaode = L.tileLayer("https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=7&x={x}&y={y}&z={z}&scl=1&scale=1", {
+async function fetchTiandituKey() {
+  try {
+    const r = await fetch("/api/tianditu/key", { headers: { "Accept": "application/json" } });
+    const j = await r.json().catch(() => null);
+    return (j && typeof j.key === "string") ? j.key.trim() : "";
+  } catch (_) {
+    return "";
+  }
+}
+function addOsmBaseLayer() {
+  return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: "© OpenStreetMap 贡献者"
+  }).addTo(MAP);
+}
+function addGaodeBaseLayer() {
+  return L.tileLayer("https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=7&x={x}&y={y}&z={z}&scl=1&scale=1", {
     subdomains: "1234",
     noWrap: false,
     maxZoom: 18,
     keepBuffer: 6,
     attribution: "© 高德地图"
+  }).addTo(MAP);
+}
+function addTiandituLayers(tk) {
+  const wmtsParams = "SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles";
+  const vec = L.tileLayer(`https://t{s}.tianditu.gov.cn/vec_w/wmts?${wmtsParams}&LAYER=vec&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${encodeURIComponent(tk)}`, {
+    subdomains: "01234567",
+    maxZoom: 18,
+    keepBuffer: 6,
+    attribution: "© 天地图"
   });
+  const cva = L.tileLayer(`https://t{s}.tianditu.gov.cn/cva_w/wmts?${wmtsParams}&LAYER=cva&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=${encodeURIComponent(tk)}`, {
+    subdomains: "01234567",
+    maxZoom: 18,
+    keepBuffer: 6
+  });
+  vec.addTo(MAP);
+  cva.addTo(MAP);
+  return { vec, cva };
+}
+function addGaodeWithFallback() {
+  const gaode = addGaodeBaseLayer();
   let loaded = false;
   let errorCount = 0;
   gaode.on("load", () => {
@@ -16,15 +51,35 @@ function addBaseLayerWithFallback() {
   gaode.on("tileerror", () => {
     errorCount++;
     if (!loaded && errorCount > 8) {
-      MAP.removeLayer(gaode);
-      const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18,
-        attribution: "© OpenStreetMap 贡献者"
-      }).addTo(MAP);
+      try { MAP.removeLayer(gaode); } catch {}
+      addOsmBaseLayer();
       setStatus("高德底图不可用，已回退到 OSM");
     }
   });
-  gaode.addTo(MAP);
+}
+async function addBaseLayerWithFallback() {
+  const tk = await fetchTiandituKey();
+  if (!tk) {
+    addGaodeWithFallback();
+    setStatus("未配置天地图 Key，优先使用高德底图");
+    return;
+  }
+  const { vec, cva } = addTiandituLayers(tk);
+  let loaded = false;
+  let errorCount = 0;
+  vec.on("load", () => {
+    loaded = true;
+    setStatus("已加载天地图底图（含国家标注）");
+  });
+  vec.on("tileerror", () => {
+    errorCount++;
+    if (!loaded && errorCount > 8) {
+      try { MAP.removeLayer(vec); } catch {}
+      try { MAP.removeLayer(cva); } catch {}
+      addGaodeWithFallback();
+      setStatus("天地图不可用，已回退到高德底图");
+    }
+  });
 }
 addBaseLayerWithFallback();
 let ROTATE_RUNNING = false;

@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .config import settings
 from .db import Base, engine, get_db
 from .models import Breed, Origin
 from .schemas import BreedListOut, SyncRunOut, SyncStatusOut
@@ -53,6 +54,11 @@ def sync_status(db: Session = Depends(get_db)):
 async def sync_run(db: Session = Depends(get_db)):
     ok, detail, stats = await run_sync(db)
     return {"ok": ok, "detail": detail, "stats": stats}
+
+
+@app.get("/api/tianditu/key")
+def tianditu_key():
+    return {"key": settings.tianditu_key or ""}
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
