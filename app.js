@@ -1,4 +1,12 @@
-const MAP = L.map("map", { worldCopyJump: false, minZoom: 2, zoomSnap: 0.25, zoomDelta: 0.5, inertia: true }).setView([20, 0], 2.5);
+const MAP = L.map("map", {
+  worldCopyJump: false,
+  minZoom: 2,
+  zoomSnap: 0.25,
+  zoomDelta: 0.5,
+  inertia: true,
+  zoomControl: false
+}).setView([20, 0], 2.5);
+L.control.zoom({ position: "bottomleft" }).addTo(MAP);
 async function fetchTiandituKey() {
   try {
     const r = await fetch("/api/tianditu/key", { headers: { "Accept": "application/json" } });
@@ -53,7 +61,7 @@ function addGaodeWithFallback() {
     if (!loaded && errorCount > 8) {
       try { MAP.removeLayer(gaode); } catch {}
       addOsmBaseLayer();
-      setStatus("高德底图不可用，已回退到 OSM");
+      setStatus("高德底图暂时没跟上，已经换到 OSM 地图继续探索。");
     }
   });
 }
@@ -61,7 +69,7 @@ async function addBaseLayerWithFallback() {
   const tk = await fetchTiandituKey();
   if (!tk) {
     addGaodeWithFallback();
-    setStatus("未配置天地图 Key，优先使用高德底图");
+    setStatus("还没有配置天地图 Key，先用高德地图带路。");
     return;
   }
   const { vec, cva } = addTiandituLayers(tk);
@@ -69,7 +77,7 @@ async function addBaseLayerWithFallback() {
   let errorCount = 0;
   vec.on("load", () => {
     loaded = true;
-    setStatus("已加载天地图底图（含国家标注）");
+    setStatus("已加载天地图底图，准备开始世界猫咪旅行。");
   });
   vec.on("tileerror", () => {
     errorCount++;
@@ -77,7 +85,7 @@ async function addBaseLayerWithFallback() {
       try { MAP.removeLayer(vec); } catch {}
       try { MAP.removeLayer(cva); } catch {}
       addGaodeWithFallback();
-      setStatus("天地图不可用，已回退到高德底图");
+      setStatus("天地图暂时休息了，已经换到高德地图继续探索。");
     }
   });
 }
@@ -103,41 +111,43 @@ function startRotation() {
   ROTATE_RUNNING = true;
   ROTATE_LAST_MS = 0;
   ROTATE_TIMER = setInterval(rotateTick, 33);
-  try { setStatus(`自转中：${ROTATE_SPEED}°/s`); } catch {}
+  try { setStatus(`地图正在轻轻转动：${ROTATE_SPEED}°/s`); } catch {}
 }
 function stopRotation() {
   ROTATE_RUNNING = false;
   if (ROTATE_TIMER) clearInterval(ROTATE_TIMER);
   ROTATE_TIMER = null;
-  try { setStatus("自转已暂停"); } catch {}
+  try { setStatus("地图转转暂停啦"); } catch {}
 }
 function addRotateSwitcher() {
-  const ctl = L.control({ position: "topright" });
-  ctl.onAdd = () => {
-    const wrap = L.DomUtil.create("div", "rotate-switch");
-    const val = isNaN(ROTATE_SPEED) ? 1 : ROTATE_SPEED;
-    wrap.innerHTML = `<label style="font-size:12px;color:#222;display:flex;align-items:center;gap:6px;">自转
-      <select id="rotateSpeed">
-        <option value="0">暂停</option>
-        <option value="0.004167">真实(≈15°/h)</option>
-        <option value="0.5">0.5°/s</option>
-        <option value="1">1°/s</option>
-        <option value="3">3°/s</option>
-        <option value="10">10°/s</option>
-      </select>
-    </label>`;
-    const sel = wrap.querySelector("#rotateSpeed");
-    if (sel) sel.value = String(val);
-    sel.addEventListener("change", (e) => {
-      const v = parseFloat(e.target.value);
-      ROTATE_SPEED = isNaN(v) ? 0 : v;
-      try { localStorage.setItem("ROTATE_SPEED", String(ROTATE_SPEED)); } catch {}
-      if (ROTATE_SPEED > 0) startRotation(); else stopRotation();
-    });
-    L.DomEvent.disableClickPropagation(wrap);
-    return wrap;
-  };
-  ctl.addTo(MAP);
+  const hud = document.getElementById("hud");
+  if (!hud) return;
+  const actionRow = hud.querySelector(".action-row") || hud;
+  if (actionRow.querySelector(".rotate-switch")) return;
+  const wrap = document.createElement("div");
+  wrap.className = "rotate-switch";
+  const val = isNaN(ROTATE_SPEED) ? 1 : ROTATE_SPEED;
+  wrap.innerHTML = `<label class="rotate-switch-label">地球转一转
+    <select id="rotateSpeed" aria-label="选择地图旋转速度">
+      <option value="0">先停一下</option>
+      <option value="0.004167">慢慢转</option>
+      <option value="0.5">轻快转</option>
+      <option value="1">开心转</option>
+      <option value="3">飞快转</option>
+      <option value="10">超级旋风</option>
+    </select>
+  </label>`;
+  const sel = wrap.querySelector("#rotateSpeed");
+  if (sel) sel.value = String(val);
+  sel.addEventListener("change", (e) => {
+    const v = parseFloat(e.target.value);
+    ROTATE_SPEED = isNaN(v) ? 0 : v;
+    try { localStorage.setItem("ROTATE_SPEED", String(ROTATE_SPEED)); } catch {}
+    if (ROTATE_SPEED > 0) startRotation(); else stopRotation();
+  });
+  L.DomEvent.disableClickPropagation(wrap);
+  L.DomEvent.disableScrollPropagation(wrap);
+  actionRow.appendChild(wrap);
 }
 addRotateSwitcher();
 if (ROTATE_SPEED > 0) startRotation();
@@ -162,7 +172,7 @@ function setInitialViewBySun() {
     const lat = subsolarLatitudeNow();
     const z = MAP.getZoom() || 2.5;
     MAP.setView([lat, lon], z, { animate: false });
-    setStatus(`已按太阳正对点定位：${lat.toFixed(1)}°, ${lon.toFixed(1)}°`);
+    setStatus(`太阳正在照亮这里：${lat.toFixed(1)}°, ${lon.toFixed(1)}°`);
   } catch {}
 }
 setInitialViewBySun();
@@ -183,7 +193,7 @@ function addNightshade() {
     shade.style.bottom = "0";
     shade.style.pointerEvents = "none";
     shade.style.zIndex = "450";
-    shade.style.background = "linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.35) 18%, rgba(0,0,0,0.0) 35%, rgba(0,0,0,0.0) 65%, rgba(0,0,0,0.35) 82%, rgba(0,0,0,0.78) 100%)";
+    shade.style.background = "linear-gradient(90deg, rgba(15,23,42,0.78) 0%, rgba(15,23,42,0.30) 18%, rgba(0,0,0,0.0) 35%, rgba(0,0,0,0.0) 65%, rgba(15,23,42,0.30) 82%, rgba(15,23,42,0.78) 100%)";
   } catch {}
 }
 addNightshade();
@@ -295,9 +305,9 @@ function divIcon(url) {
   if (url) {
     html = `<div class="cat-icon" style="background-image:url('${url}')"></div>`;
   } else {
-    html = `<div class="cat-icon fallback">🐱</div>`;
+    html = `<div class="cat-icon fallback"></div>`;
   }
-  const icon = L.divIcon({ html, className: "", iconSize: [44, 44], iconAnchor: [22, 22], popupAnchor: [0, -20] });
+  const icon = L.divIcon({ html, className: "", iconSize: [48, 48], iconAnchor: [24, 24], popupAnchor: [0, -22] });
   ICON_CACHE[key] = icon;
   return icon;
 }
@@ -335,12 +345,12 @@ async function fetchBreedsWithReconnect() {
     try {
       const items = await fetchBreedsFromBackend();
       if (attempt > 0) {
-        setStatus(`重连成功，已获取品种 ${items.length} 条`);
+        setStatus(`太好了，又找到 ${items.length} 条猫咪资料。`);
       }
       return items;
     } catch (_) {
       attempt += 1;
-      setStatus(`连接中断，5 秒后重试（第 ${attempt} 次）…`);
+      setStatus(`猫咪雷达断开了，5 秒后再试一次（第 ${attempt} 次）…`);
       await sleep(5000);
     }
   }
@@ -422,7 +432,8 @@ function createPopupHtml(item) {
   const img = thumb
     ? `<img class="preview" src="${escapeHtml(large || thumb)}" alt="${name}" loading="lazy" referrerpolicy="no-referrer" onerror="if(this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback;}" data-fallback="${escapeHtml(thumb)}" />`
     : "";
-  return `<div class="cat-popup">${img}<div class="name">${name}</div><div class="meta">原产地：${origin}</div><a href="${escapeHtml(link)}" target="_blank" rel="noopener">前往维基百科</a></div>`;
+  const fact = origin ? `${name}来自 ${origin}，快点开小卡片继续认识它。` : `点开小卡片，继续认识 ${name}。`;
+  return `<div class="cat-popup">${img}<div class="name">${name}</div><div class="meta">猫咪家乡：${origin || "还在探索中"}</div><div class="fact">${fact}</div><a class="cat-popup-link" href="${escapeHtml(link)}" target="_blank" rel="noopener">去看看猫咪故事</a></div>`;
 }
 function clearMarkers() {
   while (MARKERS.length) {
@@ -496,23 +507,23 @@ function renderMarkers(withCoords) {
   return rendered;
 }
 async function loadFromDbAndRender() {
-  setStatus("加载数据库数据…");
+  setStatus("正在整理猫咪足迹…");
   const breeds = await fetchBreedsWithReconnect();
   if (!breeds || breeds.length === 0) {
     clearMarkers();
-    setStatus("数据库暂无数据，点击右下角“同步”从维基同步到 MySQL");
+    setStatus("猫咪资料库还是空空的，点右下角开始猫咪探索吧。");
     return;
   }
-  setStatus(`已获取品种 ${breeds.length} 条，生成地图点位…`);
+  setStatus(`找到了 ${breeds.length} 条猫咪线索，正在摆放小脚印…`);
   const withCoords = toWithCoords(breeds);
   if (withCoords.length === 0) {
     clearMarkers();
-    setStatus("暂无可定位的原产地信息");
+    setStatus("暂时还没有找到能定位的猫咪家乡。");
     return;
   }
-  setStatus(`已生成坐标 ${withCoords.length} 条，渲染猫咪标记…`);
+  setStatus(`正在把 ${withCoords.length} 个猫咪足迹放上地图…`);
   const rendered = renderMarkers(withCoords);
-  setStatus(`已渲染 ${rendered} 个猫咪标记`);
+  setStatus(`地图上已经有 ${rendered} 个猫咪小伙伴啦。`);
 }
 async function runSync() {
   const ctrl = new AbortController();
@@ -538,18 +549,18 @@ function setupSyncButton() {
     if (syncing) return;
     syncing = true;
     setSyncButtonEnabled(false);
-    setStatus("同步中：正在从维基抓取并写入数据库…");
+    setStatus("正在收集新的猫咪足迹，请稍等一下…");
     try {
       const res = await runSync();
       if (!res.ok) {
-        setStatus(`同步失败：${res.detail || "unknown"}`);
+        setStatus(`这次探索没有成功：${res.detail || "unknown"}`);
         return;
       }
       const upserted = res.stats && typeof res.stats.upserted === "number" ? res.stats.upserted : null;
-      setStatus(`同步完成${upserted !== null ? `：写入 ${upserted} 条` : ""}，正在刷新…`);
+      setStatus(`猫咪足迹更新好了${upserted !== null ? `：带回了 ${upserted} 条新资料` : ""}，马上刷新地图…`);
       await loadFromDbAndRender();
     } catch (_) {
-      setStatus("同步失败：网络或服务异常");
+      setStatus("这次探索遇到了网络小风波，请稍后再试一次。");
     } finally {
       syncing = false;
       setSyncButtonEnabled(true);

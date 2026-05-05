@@ -1,8 +1,41 @@
+:root {
+  --color-primary: #15803d;
+  --color-primary-soft: #22c55e;
+  --color-accent: #ec4899;
+  --color-accent-soft: #f9a8d4;
+  --color-surface: rgba(255, 255, 255, 0.88);
+  --color-surface-strong: rgba(255, 255, 255, 0.95);
+  --color-background: #f0fdf4;
+  --color-border: #bbf7d0;
+  --color-text: #14532d;
+  --color-text-soft: #3f7a58;
+  --color-link: #0f766e;
+  --color-shadow: rgba(44, 122, 73, 0.18);
+  --color-shadow-deep: rgba(236, 72, 153, 0.18);
+  --color-status: #0f766e;
+  --font-heading: "Fredoka", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-body: "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --radius-card: 26px;
+  --radius-pill: 999px;
+  --radius-soft: 18px;
+  --transition-fast: 180ms ease-out;
+}
+
 html, body, #app, #map {
   height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
+}
+
+body {
+  overflow: hidden;
+  font-family: var(--font-body);
+  background:
+    radial-gradient(circle at top left, rgba(187, 247, 208, 0.9), transparent 28%),
+    radial-gradient(circle at right 20%, rgba(249, 168, 212, 0.28), transparent 20%),
+    var(--color-background);
+  color: var(--color-text);
 }
 
 #map {
@@ -12,113 +45,167 @@ html, body, #app, #map {
 
 #hud {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
-  border-radius: 10px;
-  padding: 10px 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  top: 16px;
+  left: 16px;
+  width: min(360px, calc(100vw - 32px));
+  background: var(--color-surface);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  border: 3px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 30px var(--color-shadow), 0 3px 0 rgba(255, 255, 255, 0.8) inset;
   z-index: 1000;
 }
 
 #hud .title {
+  font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 16px;
-  margin-bottom: 4px;
+  font-size: 30px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+  color: var(--color-text);
 }
 
 #hud .sub {
-  font-size: 12px;
-  color: #333;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-text);
 }
 
 #hud .hint {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #666;
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-soft);
+}
+
+.action-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .rotate-switch {
-  background: rgba(255,255,255,0.9);
-  padding: 6px 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  margin-top: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  background: var(--color-surface-strong);
+  padding: 8px 10px;
+  border-radius: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 24px var(--color-shadow);
+  margin-top: 0;
+  font-family: var(--font-body);
+  flex: 1;
 }
+
+.rotate-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .rotate-switch select {
+  appearance: none;
+  border: 2px solid var(--color-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-text);
   font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.rotate-switch select:focus,
+.sync-btn:focus,
+.cat-popup-link:focus {
+  outline: 3px solid rgba(21, 128, 61, 0.28);
+  outline-offset: 2px;
 }
 
 .status {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #2a7bf6;
-}
-
-.sync-wrap {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 1000;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(240, 253, 244, 0.92);
+  border: 2px dashed rgba(34, 197, 94, 0.32);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-status);
 }
 
 .sync-btn {
+  display: inline-flex;
+  width: auto;
+  margin-top: 0;
+  flex: 0 0 auto;
+  justify-content: center;
+  align-items: center;
   appearance: none;
-  border: 0;
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-  font-size: 14px;
+  border: 3px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius-pill);
+  padding: 14px 20px;
+  background: rgba(240, 253, 244, 0.92);
+  box-shadow: 0 12px 24px var(--color-shadow), 0 -3px 0 rgba(255, 255, 255, 0.26) inset;
+  font-family: var(--font-heading);
+  font-size: 16px;
   font-weight: 700;
-  color: #222;
+  color: #0f5132;
   cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast), background var(--transition-fast);
+}
+
+.sync-btn:hover {
+  background: rgba(240, 253, 244, 0.98);
+  transform: translateY(-1px) scale(1.01);
+}
+
+.sync-btn:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: 0 8px 16px var(--color-shadow), 0 -2px 0 rgba(255, 255, 255, 0.2) inset;
 }
 
 .sync-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .cat-icon {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.25);
-  border: 2px solid #fff;
-  background: #f8f8f8 center/cover no-repeat;
+  box-shadow: 0 10px 18px rgba(20, 83, 45, 0.24);
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  background: linear-gradient(180deg, #ffffff, #ecfccb) center/cover no-repeat;
 }
 
 .cat-icon.fallback {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ffe7e7, #fff8e7);
-  color: #7a5b4b;
-  font-size: 22px;
+  background: linear-gradient(135deg, #fce7f3, #fef9c3);
+  color: #7c2d12;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.cat-icon.fallback::before {
+  content: "喵";
 }
 
 .cat-popup {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  font-family: var(--font-body);
   max-width: 320px;
   box-sizing: border-box;
-}
-
-.cat-popup .name {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.cat-popup .meta {
-  font-size: 12px;
-  color: #555;
-  margin-bottom: 6px;
+  color: var(--color-text);
 }
 
 .cat-popup .preview {
@@ -127,18 +214,61 @@ html, body, #app, #map {
   max-width: 100%;
   height: auto;
   object-fit: contain;
-  border-radius: 10px;
-  margin: 4px 0 8px;
-  background: #f2f2f2;
+  border-radius: 18px;
+  margin: 0 0 10px;
+  background: #f2fdf4;
+  border: 2px solid #dcfce7;
+}
+
+.cat-popup .name {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.cat-popup .meta,
+.cat-popup .fact {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-soft);
+}
+
+.cat-popup .fact {
+  margin: 8px 0 12px;
+}
+
+.cat-popup-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--color-link);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.cat-popup-link:hover {
+  background: rgba(34, 197, 94, 0.22);
+  transform: translateY(-1px);
 }
 
 .leaflet-popup-content-wrapper {
   overflow: hidden;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 18px 30px rgba(20, 83, 45, 0.2);
 }
 
 .leaflet-popup-content {
   max-width: 320px;
   box-sizing: border-box;
+  margin: 16px;
 }
 
 .leaflet-popup-content img {
@@ -146,18 +276,90 @@ html, body, #app, #map {
   height: auto !important;
 }
 
-.cat-popup a {
-  color: #2a7bf6;
-  text-decoration: none;
-}
-
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  border-radius: 10px;
+.leaflet-popup-tip {
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.97);
 }
 
 .nightshade {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.35) 18%, rgba(0,0,0,0.0) 35%, rgba(0,0,0,0.0) 65%, rgba(0,0,0,0.35) 82%, rgba(0,0,0,0.78) 100%);
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.78) 0%, rgba(15, 23, 42, 0.30) 18%, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0) 65%, rgba(15, 23, 42, 0.30) 82%, rgba(15, 23, 42, 0.78) 100%);
+
+.leaflet-top.leaflet-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.leaflet-control-zoom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.72);
+  background: var(--color-surface-strong);
+  box-shadow: 0 10px 24px var(--color-shadow);
+}
+
+.leaflet-bar.leaflet-control-zoom,
+.leaflet-bar.leaflet-control-zoom a {
+  border: 0;
+}
+
+.leaflet-control-zoom a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.leaflet-control-zoom a + a {
+  margin-top: 0;
+  margin-left: 8px;
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(240, 253, 244, 0.95);
+  transform: translateY(-1px);
+}
+
+.leaflet-control-zoom a:focus {
+  outline: 3px solid rgba(21, 128, 61, 0.28);
+  outline-offset: 2px;
+}
+  #hud {
+    top: 12px;
+    left: 12px;
+    width: min(100vw - 24px, 340px);
+    padding: 14px;
+  }
+
+  #hud .title {
+    font-size: 24px;
+  }
+
+  #hud .sub,
+  #hud .hint,
+  .status {
+    font-size: 13px;
+  }
+
+  .sync-btn {
+    width: 100%;
+  }
 }
