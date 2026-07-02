@@ -1,0 +1,30 @@
+.DS_Store
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Local app data
+patcat.sqlite3
+
+# MySQL / Docker runtime data
+mysql-data/
+
+# Logs
+*.log
+
